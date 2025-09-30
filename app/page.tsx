@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation'; 
+import { useSearchParams } from 'next/navigation';
 import { startCall, endCall } from '@/lib/callFunctions'
 import { CallConfig, SelectedTool } from '@/lib/types'
 import demoConfig, { loadDemoConfig } from './demo-config';
@@ -11,7 +11,7 @@ import UVLogo from '@/public/UVMark-White.svg';
 import CallStatus from './components/CallStatus';
 import DebugMessages from '@/app/components/DebugMessages';
 import MicToggleButton from './components/MicToggleButton';
-import { PhoneOffIcon } from 'lucide-react';
+import { PhoneOffIcon, PhoneIcon, MicIcon, CarIcon, MapPinIcon, ClockIcon, UserIcon } from 'lucide-react';
 import OrderDetails from './components/OrderDetails';
 
 type SearchParamsProps = {
@@ -32,7 +32,7 @@ function SearchParamsHandler({ children }: SearchParamsHandlerProps) {
   const showDebugMessages = searchParams.get('showDebugMessages') === 'true';
   const showUserTranscripts = searchParams.get('showUserTranscripts') === 'true';
   let modelOverride: string | undefined;
-  
+
   if (searchParams.get('model')) {
     modelOverride = "fixie-ai/" + searchParams.get('model');
   }
@@ -49,7 +49,7 @@ export default function Home() {
   const [actualDemoConfig, setActualDemoConfig] = useState(demoConfig);
 
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     if (transcriptContainerRef.current) {
       transcriptContainerRef.current.scrollTop = transcriptContainerRef.current.scrollHeight;
@@ -70,16 +70,16 @@ export default function Home() {
 
 
   const handleStatusChange = useCallback((status: UltravoxSessionStatus | string | undefined) => {
-    if(status) {
+    if (status) {
       setAgentStatus(status);
     } else {
       setAgentStatus('off');
     }
-    
+
   }, []);
 
   const handleTranscriptChange = useCallback((transcripts: Transcript[] | undefined) => {
-    if(transcripts) {
+    if (transcripts) {
       setCallTranscript([...transcripts]);
     }
   }, []);
@@ -120,7 +120,7 @@ export default function Home() {
       }
 
       let cpTool: SelectedTool | undefined = actualDemoConfig?.callConfig?.selectedTools?.find(tool => tool.toolName === "createProfile");
-      
+
       if (cpTool) {
         cpTool.parameterOverrides = paramOverride;
       }
@@ -154,88 +154,165 @@ export default function Home() {
   };
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    }>
       <SearchParamsHandler>
         {({ showMuteSpeakerButton, modelOverride, showDebugMessages, showUserTranscripts }: SearchParamsProps) => (
-          <div className="flex flex-col items-center justify-center">
-            {/* Main Area */}
-            <div className="max-w-[1206px] mx-auto w-full py-5 pl-5 pr-[10px] border border-[#2A2A2A] rounded-[3px]">
-              <div className="flex flex-col justify-center lg:flex-row ">
-                {/* Action Area */}
-                <div className="w-full lg:w-2/3">
-                  <h1 className="text-2xl font-bold w-full">{actualDemoConfig.title}</h1>
-                  <div className="flex flex-col justify-between items-start h-full font-mono p-4 ">
-                    <div className="mt-20 self-center">
-                      <BorderedImage
-                        src={UVLogo}
-                        alt="todo"
-                        size="md"
-                      />
-                    </div>
-                    {isCallActive ? (
-                      <div className="w-full">
-                        <div className="mb-5 relative">
-                          <div 
-                            ref={transcriptContainerRef}
-                            className="h-[300px] p-2.5 overflow-y-auto relative"
-                          >
-                            {callTranscript && callTranscript.map((transcript, index) => (
-                              <div key={index}>
-                                {showUserTranscripts ? (
-                                  <>
-                                    <p><span className="text-gray-600">{transcript.speaker === 'agent' ? "Ultravox" : "User"}</span></p>
-                                    <p className="mb-4"><span>{transcript.text}</span></p>
-                                  </>
-                                ) : (
-                                  transcript.speaker === 'agent' && (
-                                    <>
-                                      <p><span className="text-gray-600">{transcript.speaker === 'agent' ? "Ultravox" : "User"}</span></p>
-                                      <p className="mb-4"><span>{transcript.text}</span></p>
-                                    </>
-                                  )
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-t from-transparent to-black pointer-events-none" />
-                        </div>
-                        <div className="flex justify-between space-x-4 p-4 w-full">
-                          <MicToggleButton role={Role.USER}/>
-                          { showMuteSpeakerButton && <MicToggleButton role={Role.AGENT}/> }
-                          <button
-                            type="button"
-                            className="flex-grow flex items-center justify-center h-10 bg-red-500"
-                            onClick={handleEndCallButtonClick}
-                            disabled={!isCallActive}
-                          >
-                            <PhoneOffIcon width={24} className="brightness-0 invert" />
-                            <span className="ml-2">End Call</span>
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="h-[300px] text-gray-400 mb-6 mt-32 lg:mt-0">
-                          {actualDemoConfig.overview}
-                        </div>
-                        <button
-                          type="button"
-                          className="hover:bg-gray-700 px-6 py-2 border-2 w-full mb-4"
-                          onClick={() => handleStartCallButtonClick(modelOverride, showDebugMessages)}
-                        >
-                          Start Call
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Call Status */}
-                <CallStatus status={agentStatus}>
-                  <OrderDetails />
-                </CallStatus>
+          <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute -inset-10 opacity-50">
+                <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+                <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+                <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
               </div>
             </div>
-            {/* Debug View */}
+
+            {/* Main Container */}
+            <div className="relative z-10 container mx-auto px-4 py-8">
+              {/* Header */}
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-6 animate-pulse">
+                  <CarIcon className="w-10 h-10 text-white" />
+                </div>
+                <h1 className="text-5xl font-bold text-white mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  {actualDemoConfig.title}
+                </h1>
+                <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+                  AI-Powered Taxi Booking System
+                </p>
+              </div>
+
+              {/* Main Content */}
+              <div className="max-w-6xl mx-auto">
+                <div className="grid lg:grid-cols-3 gap-8">
+                  {/* Left Panel - Main Interface */}
+                  <div className="lg:col-span-2">
+                    <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
+                      {!isCallActive ? (
+                        /* Welcome State */
+                        <div className="text-center">
+                          {/* AI Avatar */}
+                          <div className="relative mb-8">
+                            <div className="w-32 h-32 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse">
+                              <MicIcon className="w-16 h-16 text-white" />
+                            </div>
+                            <div className="absolute inset-0 w-32 h-32 mx-auto border-4 border-purple-400 rounded-full animate-ping opacity-75"></div>
+                          </div>
+
+                          {/* Features Grid */}
+                          <div className="grid md:grid-cols-2 gap-6 mb-8">
+                            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                              <MapPinIcon className="w-8 h-8 text-purple-400 mb-3 mx-auto" />
+                              <h3 className="text-white font-semibold mb-2">Smart Routing</h3>
+                              <p className="text-gray-300 text-sm">AI-powered address validation and optimal route planning</p>
+                            </div>
+                            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                              <ClockIcon className="w-8 h-8 text-pink-400 mb-3 mx-auto" />
+                              <h3 className="text-white font-semibold mb-2">Real-time Updates</h3>
+                              <p className="text-gray-300 text-sm">Live booking status and driver location tracking</p>
+                            </div>
+                            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                              <UserIcon className="w-8 h-8 text-yellow-400 mb-3 mx-auto" />
+                              <h3 className="text-white font-semibold mb-2">Natural Voice</h3>
+                              <p className="text-gray-300 text-sm">Speak naturally - no complex commands needed</p>
+                            </div>
+                            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                              <CarIcon className="w-8 h-8 text-green-400 mb-3 mx-auto" />
+                              <h3 className="text-white font-semibold mb-2">Vehicle Options</h3>
+                              <p className="text-gray-300 text-sm">Standard, Estate, MPV, and Luxury vehicles available</p>
+                            </div>
+                          </div>
+
+                          {/* Overview Text */}
+                          <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl p-6 mb-8 border border-purple-500/30">
+                            <p className="text-white leading-relaxed">
+                              {actualDemoConfig.overview}
+                            </p>
+                          </div>
+
+                          {/* Start Call Button */}
+                          <button
+                            type="button"
+                            className="group relative inline-flex items-center justify-center px-12 py-4 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-full hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl"
+                            onClick={() => handleStartCallButtonClick(modelOverride, showDebugMessages)}
+                          >
+                            <PhoneIcon className="w-6 h-6 mr-3 group-hover:animate-bounce" />
+                            Start Voice Call
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                          </button>
+                        </div>
+                      ) : (
+                        /* Active Call State */
+                        <div>
+                          {/* Call Header */}
+                          <div className="text-center mb-6">
+                            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                              <MicIcon className="w-10 h-10 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Call Active</h2>
+                            <p className="text-gray-300">Speak naturally to book your taxi</p>
+                          </div>
+
+                          {/* Conversation Display */}
+                          <div className="bg-black/30 rounded-2xl p-6 mb-6 border border-white/10">
+                            <div
+                              ref={transcriptContainerRef}
+                              className="h-80 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-transparent"
+                            >
+                              {callTranscript && callTranscript.map((transcript, index) => (
+                                <div key={index} className={`flex ${transcript.speaker === 'agent' ? 'justify-start' : 'justify-end'}`}>
+                                  {(showUserTranscripts || transcript.speaker === 'agent') && (
+                                    <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${transcript.speaker === 'agent'
+                                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                      : 'bg-white/20 text-white border border-white/30'
+                                      }`}>
+                                      <p className="text-xs opacity-75 mb-1">
+                                        {transcript.speaker === 'agent' ? "AI Assistant" : "You"}
+                                      </p>
+                                      <p className="text-sm">{transcript.text}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Call Controls */}
+                          <div className="flex justify-center space-x-4">
+                            <MicToggleButton role={Role.USER} />
+                            {showMuteSpeakerButton && <MicToggleButton role={Role.AGENT} />}
+                            <button
+                              type="button"
+                              className="group flex items-center justify-center px-8 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                              onClick={handleEndCallButtonClick}
+                              disabled={!isCallActive}
+                            >
+                              <PhoneOffIcon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+                              End Call
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Panel - Status & Details */}
+                  <div className="lg:col-span-1">
+                    <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border border-white/20 shadow-2xl">
+                      <CallStatus status={agentStatus}>
+                        <OrderDetails />
+                      </CallStatus>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Debug Messages */}
             <DebugMessages debugMessages={callDebugMessages} />
           </div>
         )}

@@ -22,26 +22,29 @@ const MicToggleButton: React.FC<MicToggleButtonProps> = ({ role }) => {
   return (
     <button
       onClick={toggleMic}
-      className="flex-grow flex items-center justify-center border-2 h-10 hover:bg-gray-700"
+      className={`group flex items-center justify-center px-6 py-3 rounded-full transition-all duration-300 transform hover:scale-105 ${
+        isMuted 
+          ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
+          : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+      } text-white shadow-lg`}
     >
       {isMuted ? (
         <>
           { role === Role.USER ? (
-            <MicOffIcon width={24} className="brightness-0 invert" />
+            <MicOffIcon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
           ) : (
-            <VolumeOffIcon width={24} className="brightness-0 invert" />
+            <VolumeOffIcon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
           )}
-          <span className="ml-2">Unmute</span>
+          <span className="font-medium">Unmute</span>
         </>
       ) : (
         <>
           { role === Role.USER ? (
-            <MicIcon width={24} className="brightness-0 invert" />
+            <MicIcon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
           ) : (
-            <Volume2Icon width={24} className="brightness-0 invert" />
+            <Volume2Icon className="w-5 h-5 mr-2 group-hover:animate-bounce" />
           )}
-
-          <span className="ml-2">Mute</span>
+          <span className="font-medium">Mute</span>
         </>
       )}
     </button>

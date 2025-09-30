@@ -49,8 +49,8 @@ async function createDemoConfigFromSharedConfig(): Promise<DemoConfig> {
   const config = await loadUltravoxConfig();
   
   return {
-    title: "Cromwell Cars",
-    overview: "This agent uses the SAME configuration as the Twilio phone service. Edit twilio-incoming-advanced-js/ultravox-config.js to update both phone and web interfaces.",
+    title: "NetTech Ltd",
+    overview: "Welcome to NetTech Ltd's AI-powered taxi booking system. Speak naturally to book your ride, check existing bookings, or get driver locations. Our advanced voice AI makes booking as easy as talking to a friend.",
     callConfig: {
       systemPrompt: config.systemPrompt,
       model: config.model,
@@ -73,8 +73,8 @@ This ensures both phone and web use the SAME agent configuration.
 
 // Fallback configuration for initial render
 export const demoConfig: DemoConfig = {
-  title: "Cromwell Cars",
-  overview: "Loading shared configuration from twilio-incoming-advanced-js/ultravox-config.js...",
+  title: "NetTech Ltd",
+  overview: "Loading NetTech Ltd's AI taxi booking system...",
   callConfig: {
     systemPrompt: FALLBACK_SYSTEM_PROMPT,
     model: "fixie-ai/ultravox",
